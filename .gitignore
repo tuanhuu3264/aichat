@@ -27,9 +27,6 @@ build/
 *.swp
 
 # Docker related files
-Dockerfile
-docker-compose.yml
-
 # Other files
 *.log
 *.bak
