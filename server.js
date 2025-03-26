@@ -3,6 +3,13 @@ import Ollama from "ollama";
 import cors from "cors"; // Import CORS
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
+// Import node-fetch và polyfill cho XMLHttpRequest
+import fetch from 'node-fetch';
+import { XMLHttpRequest } from 'xhr2';
+
+// Đảm bảo Ollama sử dụng fetch và XMLHttpRequest đúng cách
+global.fetch = fetch;
+global.XMLHttpRequest = XMLHttpRequest;
 
 const app = express();
 const port = 3000;
