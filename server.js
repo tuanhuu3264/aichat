@@ -4,6 +4,8 @@ import cors from "cors";
 import fetch from "node-fetch"; // Thêm node-fetch nếu cần
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
+import xhr2 from "xhr2";
+global.XMLHttpRequest = xhr2;
 
 const app = express();
 const port = 3000;
