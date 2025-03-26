@@ -15,5 +15,5 @@ COPY . .
 # Expose the port your app runs on
 EXPOSE 3000
 
-# Run the app in development mode
+# Run the app in development mode with nodemon
 CMD ["npm", "run", "dev"]
