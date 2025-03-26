@@ -27,7 +27,7 @@ const swaggerOptions = {
       version: "1.0.0",
       description: "API để giao tiếp với Ollama",
     },
-    basePath: "/",
+    basePath: "/", // Đảm bảo rằng Swagger hiểu đường dẫn đúng
   },
   apis: ["./server.js"], // Đường dẫn tới file chứa các route API (ở đây là server.js)
 };
