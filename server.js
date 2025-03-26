@@ -1,16 +1,22 @@
 import express from "express";
 import Ollama from "ollama";
-import cors from "cors"; // Import CORS
+import cors from "cors";
+import fetch from "node-fetch"; // Thêm node-fetch nếu cần
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
 
 const app = express();
 const port = 3000;
 
-app.use(cors());
+const corsOptions = {
+  origin: "*", // Cho phép tất cả các nguồn
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
-// Cấu hình Swagger
+// Swagger Configuration
 const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
@@ -105,58 +111,16 @@ const swaggerOptions = {
   apis: ["./routes/*.js"], // Path to the API files
 };
 
-
-// Khởi tạo Swagger
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
-
-// Cấu hình Swagger UI
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Định nghĩa API
-/**
- * @swagger
- * /api/chat:
- *   post:
- *     summary: Gửi tin nhắn tới Ollama và nhận phản hồi
- *     description: Gửi tin nhắn từ người dùng và nhận phản hồi từ Ollama.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               content:
- *                 type: string
- *                 example: "Why is the sky blue?"
- *     responses:
- *       200:
- *         description: Phản hồi từ Ollama
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 result:
- *                   type: string
- *                   example: "The sky is blue because of the scattering of light."
- *       500:
- *         description: Lỗi khi giao tiếp với Ollama
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Có lỗi xảy ra trong quá trình xử lý"
- */
+// API Endpoint
 app.post("/api/chat", async (req, res) => {
   try {
     const { content } = req.body;
 
     const response = await Ollama.chat({
-      model: "gemma3:1b",
+      model: "gemma3:4b",
       messages: [{ role: "user", content: content || "Why is the sky blue?" }],
     });
 
