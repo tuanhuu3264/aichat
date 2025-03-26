@@ -12,16 +12,99 @@ app.use(express.json());
 
 // Cấu hình Swagger
 const swaggerOptions = {
-  swaggerDefinition: {
+  definition: {
+    openapi: "3.0.0",
     info: {
-      title: "Ollama API",
+      title: "Ollama Chat API",
       version: "1.0.0",
-      description: "API để giao tiếp với Ollama",
+      description: "API for interacting with Ollama",
     },
-    basePath: "/",
+    components: {
+      schemas: {
+        ChatRequest: {
+          type: "object",
+          required: ["content"],
+          properties: {
+            content: {
+              type: "string",
+              description: "Message content to send to Ollama",
+              example: "Explain quantum computing",
+            },
+          },
+        },
+        ChatResponse: {
+          type: "object",
+          properties: {
+            result: {
+              type: "string",
+              description: "Response from Ollama",
+            },
+          },
+        },
+        ErrorResponse: {
+          type: "object",
+          properties: {
+            error: {
+              type: "string",
+              description: "Error message",
+            },
+          },
+        },
+      },
+    },
+    paths: {
+      "/api/chat": {
+        post: {
+          summary: "Send message to Ollama",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ChatRequest",
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Successful response",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ChatResponse",
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Bad request",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            500: {
+              description: "Server error",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
-  apis: ["./server.js"], // Đường dẫn tới file chứa các route API (ở đây là server.js)
+  apis: ["./routes/*.js"], // Path to the API files
 };
+
 
 // Khởi tạo Swagger
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
@@ -73,7 +156,7 @@ app.post("/api/chat", async (req, res) => {
     const { content } = req.body;
 
     const response = await Ollama.chat({
-      model: "gemma3:4b",
+      model: "gemma3:1b",
       messages: [{ role: "user", content: content || "Why is the sky blue?" }],
     });
 
