@@ -21,15 +21,97 @@ app.use(express.json());
 
 // Cấu hình Swagger
 const swaggerOptions = {
-  swaggerDefinition: {
+  definition: {
+    openapi: "3.0.0",
     info: {
-      title: "Ollama API",
+      title: "Ollama Chat API",
       version: "1.0.0",
-      description: "API để giao tiếp với Ollama",
+      description: "API for interacting with Ollama",
     },
-    basePath: "/", // Đảm bảo rằng Swagger hiểu đường dẫn đúng
+    components: {
+      schemas: {
+        ChatRequest: {
+          type: "object",
+          required: ["content"],
+          properties: {
+            content: {
+              type: "string",
+              description: "Message content to send to Ollama",
+              example: "Explain quantum computing",
+            },
+          },
+        },
+        ChatResponse: {
+          type: "object",
+          properties: {
+            result: {
+              type: "string",
+              description: "Response from Ollama",
+            },
+          },
+        },
+        ErrorResponse: {
+          type: "object",
+          properties: {
+            error: {
+              type: "string",
+              description: "Error message",
+            },
+          },
+        },
+      },
+    },
+    paths: {
+      "/api/chat": {
+        post: {
+          summary: "Send message to Ollama",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ChatRequest",
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Successful response",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ChatResponse",
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Bad request",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            500: {
+              description: "Server error",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
-  apis: ["./server.js"], // Đường dẫn tới file chứa các route API (ở đây là server.js)
+  apis: ["./routes/*.js"], // Path to the API files
 };
 
 // Khởi tạo Swagger
@@ -39,12 +121,13 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Định nghĩa API
+
 /**
  * @swagger
  * /api/chat:
  *   post:
  *     summary: Gửi tin nhắn tới Ollama và nhận phản hồi
- *     description: Gửi tin nhắn từ người dùng và nhận phản hồi từ Ollama.
+ *     description: API để gửi tin nhắn và nhận phản hồi từ Ollama
  *     requestBody:
  *       required: true
  *       content:
@@ -54,10 +137,13 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *             properties:
  *               content:
  *                 type: string
- *                 example: "Why is the sky blue?"
+ *                 description: Nội dung tin nhắn gửi tới
+ *                 example: "Explain quantum computing in simple terms"
+ *             required:
+ *               - content
  *     responses:
- *       200:
- *         description: Phản hồi từ Ollama
+ *       '200':
+ *         description: Phản hồi thành công từ Ollama
  *         content:
  *           application/json:
  *             schema:
@@ -65,9 +151,20 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *               properties:
  *                 result:
  *                   type: string
- *                   example: "The sky is blue because of the scattering of light."
- *       500:
- *         description: Lỗi khi giao tiếp với Ollama
+ *                   description: Nội dung phản hồi từ mô hình
+ *                   example: "Quantum computing is a type of computing that uses quantum-mechanical phenomena..."
+ *       '400':
+ *         description: Yêu cầu không hợp lệ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Nội dung không được để trống"
+ *       '500':
+ *         description: Lỗi máy chủ
  *         content:
  *           application/json:
  *             schema:
@@ -82,7 +179,7 @@ app.post("/api/chat", async (req, res) => {
     const { content } = req.body;
 
     const response = await Ollama.chat({
-      model: "gemma3:1b",
+      model: "gemma3:4b",
       messages: [{ role: "user", content: content || "Why is the sky blue?" }],
     });
 
